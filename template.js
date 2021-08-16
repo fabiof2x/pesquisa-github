@@ -3,8 +3,8 @@ const listElement = document.querySelector('#list');
 const templateWorker = new Worker('./template_worker.js');
 
 const config = new Proxy({
-  listItems: [],
-  languageTag: 'en-US'
+  listItems: JSON.parse(sessionStorage.getItem('listItems')) || [],
+  languageTag: localStorage.getItem('lang') || 'en-US'
 }, {
   set: function (target, prop, value, receiver) {
     if (prop === 'listItems' || prop === 'languageTag') {
@@ -17,13 +17,17 @@ const config = new Proxy({
   }
 })
 
+languageSelect.value = config.languageTag;
 languageSelect.addEventListener('change', changeLanguage);
 
 function changeLanguage() {
-  config.languageTag = languageSelect.value;
+  const lang = languageSelect.value;
+  localStorage.setItem('lang', lang);
+  config.languageTag = lang;
 }
 
 export function setList(list) {
+  sessionStorage.setItem('listItems', JSON.stringify(list));
   config.listItems = list;
 }
 
@@ -35,3 +39,7 @@ function render() {
     listElement.innerHTML = data;
   }
 }
+
+(function start() {
+  render();
+})()
